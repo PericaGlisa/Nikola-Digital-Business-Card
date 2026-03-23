@@ -370,7 +370,7 @@ body {
 
 .save-pulse {
   position: absolute;
-  inset: -4px 1.375rem -4px 1.375rem;
+  inset: -4px;
   border-radius: 18px;
   border: 2px solid rgba(34,197,94,0.55);
   animation: save-pulse 2.5s ease-out infinite;
@@ -379,8 +379,8 @@ body {
 .save-pulse-2 { animation-delay: 1.25s; }
 
 @keyframes save-pulse {
-  0%   { inset: -4px 1.375rem -4px 1.375rem; opacity: 0.65; }
-  100% { inset: -14px calc(1.375rem - 10px) -14px calc(1.375rem - 10px); opacity: 0; }
+  0%   { inset: -4px; opacity: 0.65; }
+  100% { inset: -14px; opacity: 0; }
 }
 
 .btn-save {
@@ -411,6 +411,59 @@ body {
   0%        { left: -60%; }
   55%, 100% { left: 130%; }
 }
+
+/* ── Btn-with-inline-copy wrapper ── */
+.btn-group {
+  display: flex;
+  align-items: stretch;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+}
+
+.btn-group > .btn {
+  flex: 1;
+  border-radius: 0;
+  min-width: 0;
+  justify-content: flex-start;
+  padding-left: 1.125rem;
+}
+
+/* Thin separator */
+.btn-group-sep {
+  width: 1px;
+  background: rgba(255,255,255,0.13);
+  flex-shrink: 0;
+  align-self: stretch;
+}
+
+/* Inline copy button */
+.btn-inline-copy {
+  width: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.06);
+  border: none;
+  cursor: pointer;
+  color: rgba(255,255,255,0.45);
+  transition: color 0.17s, background 0.17s;
+  position: relative;
+  overflow: hidden;
+}
+.btn-inline-copy:hover  { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.14); }
+.btn-inline-copy:active { background: rgba(255,255,255,0.22); }
+
+/* Match specific button bg hues */
+.btn-group.is-call .btn-inline-copy  { background: rgba(30,58,138,0.25); }
+.btn-group.is-call .btn-inline-copy:hover { background: rgba(59,130,246,0.28); color: #fff; }
+
+.btn-group.is-email .btn-inline-copy { background: rgba(255,255,255,0.04); }
+.btn-group.is-email .btn-inline-copy:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+/* copied state */
+.btn-inline-copy.copied { color: #22C55E; }
 
 /* ── Ripple ── */
 @keyframes ripple-out {

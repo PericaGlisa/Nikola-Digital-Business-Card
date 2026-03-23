@@ -284,13 +284,22 @@ export default function VCard() {
           {/* ── Primary Actions ── */}
           <div className="actions-zone anim-fade-up d3">
 
-            {/* Call — primary */}
-            <a href={`tel:${C.primaryPhone}`} className="btn btn-call"
-              onClick={callRipple.fire} onTouchStart={callRipple.fire} aria-label="Call">
-              <IcoPhone size={20} />
-              Call {C.primaryPhoneDisplay}
-              {callRipple.els}
-            </a>
+            {/* Call — primary with inline copy */}
+            <div className="btn-group is-call">
+              <a href={`tel:${C.primaryPhone}`} className="btn btn-call"
+                onClick={callRipple.fire} onTouchStart={callRipple.fire} aria-label="Call">
+                <IcoPhone size={20} />
+                Call {C.primaryPhoneDisplay}
+                {callRipple.els}
+              </a>
+              <div className="btn-group-sep" />
+              <button
+                className={`btn-inline-copy${copiedPhone ? " copied" : ""}`}
+                onClick={copyPhone}
+                aria-label="Copy phone number">
+                {copiedPhone ? <IcoCheck /> : <IcoCopy />}
+              </button>
+            </div>
 
             {/* Call — office */}
             <a href={`tel:${C.secondaryPhone}`} className="btn btn-call btn-call-sm" aria-label="Office">
@@ -307,13 +316,22 @@ export default function VCard() {
               {waRipple.els}
             </a>
 
-            {/* Email */}
-            <a href={`mailto:${C.email}`} className="btn btn-email"
-              onClick={emailRipple.fire} onTouchStart={emailRipple.fire} aria-label="Email">
-              <span className="btn-email-label"><IcoMail />Email</span>
-              <span className="btn-email-addr">{C.email}</span>
-              {emailRipple.els}
-            </a>
+            {/* Email with inline copy */}
+            <div className="btn-group is-email">
+              <a href={`mailto:${C.email}`} className="btn btn-email"
+                onClick={emailRipple.fire} onTouchStart={emailRipple.fire} aria-label="Email">
+                <span className="btn-email-label"><IcoMail />Email</span>
+                <span className="btn-email-addr">{C.email}</span>
+                {emailRipple.els}
+              </a>
+              <div className="btn-group-sep" />
+              <button
+                className={`btn-inline-copy${copiedEmail ? " copied" : ""}`}
+                onClick={copyEmail}
+                aria-label="Copy email address">
+                {copiedEmail ? <IcoCheck /> : <IcoCopy />}
+              </button>
+            </div>
 
             {/* Share */}
             <button className="btn btn-share"
@@ -323,6 +341,20 @@ export default function VCard() {
               Share This Card
               {shareRipple.els}
             </button>
+
+            {/* Save Contact */}
+            <div className="save-wrap" style={{ padding:0, margin:"0.2rem 0 0" }}>
+              <div className="save-pulse" />
+              <div className="save-pulse save-pulse-2" />
+              <button className="btn btn-save"
+                onClick={(e) => { saveRipple.fire(e); saveContact(); }}
+                onTouchStart={saveRipple.fire}
+                aria-label="Save Contact">
+                <IcoUserPlus />
+                Save Contact
+                {saveRipple.els}
+              </button>
+            </div>
 
           </div>
 
@@ -356,17 +388,6 @@ export default function VCard() {
               </div>
             </div>
 
-            {/* Copy row */}
-            <div className="copy-row">
-              <button className="btn-copy" onClick={copyPhone}>
-                {copiedPhone ? <IcoCheck /> : <IcoCopy />}
-                {copiedPhone ? "Copied!" : "Copy Phone"}
-              </button>
-              <button className="btn-copy" onClick={copyEmail}>
-                {copiedEmail ? <IcoCheck /> : <IcoCopy />}
-                {copiedEmail ? "Copied!" : "Copy Email"}
-              </button>
-            </div>
 
           </div>
 
@@ -377,20 +398,6 @@ export default function VCard() {
             <div className="activity-chips">
               {C.activities.map(a => <span key={a} className="chip">{a}</span>)}
             </div>
-          </div>
-
-          {/* ── SAVE CONTACT — at bottom ── */}
-          <div className="save-wrap">
-            <div className="save-pulse" />
-            <div className="save-pulse save-pulse-2" />
-            <button className="btn btn-save"
-              onClick={(e) => { saveRipple.fire(e); saveContact(); }}
-              onTouchStart={saveRipple.fire}
-              aria-label="Save Contact">
-              <IcoUserPlus />
-              Save Contact
-              {saveRipple.els}
-            </button>
           </div>
 
           <div className="bottom-bar" />
