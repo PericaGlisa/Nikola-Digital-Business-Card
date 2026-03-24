@@ -21,22 +21,66 @@ const C = {
   website2Display: "www.ekoelektrofrigo.rs",
   address: "Svetolika Nikačevića 11",
   city: "Zemun, Belgrade",
+  maps: "https://www.google.com/maps/search/?api=1&query=Svetolika+Nika%C4%8Devi%C4%87a+11%2C+Zemun%2C+Belgrade",
   whatsapp: "https://wa.me/381648222606?text=Hello%2C%20I%20got%20your%20contact%20from%20QR%20code.",
 };
 
-const VCF = `BEGIN:VCARD
-VERSION:3.0
-FN:NIKOLA DAMNJANOVIĆ
-ORG:EKO ELEKTROFRIGO
-TITLE:Sales Director
-TEL:+381648222606
-TEL:+381113757288
-EMAIL:damnjanovic.nikola@eef.rs
-URL:https://www.eef.rs
-URL:https://www.ekoelektrofrigo.rs
-ADR:;;Svetolika Nikačevića 11;Zemun;Belgrade;;
-NOTE:Your partner since 1996...
-END:VCARD`;
+const UI = {
+  sr: {
+    langLabel: "Jezik",
+    position: "DIrektor Prodaje",
+    saveContact: "Sačuvaj Kontakt",
+    callPrimary: "Pozovi",
+    office: "Kancelarija",
+    whatsapp: "WhatsApp",
+    email: "Email",
+    shareCard: "Podeli Karticu",
+    websites: "Web sajtovi",
+    wholesales: "Veleprodaja",
+    openMapsGoogle: "Otvori u Google Maps",
+    openMapsApple: "Otvori u Apple Maps",
+    trustField: "B2B HVAC rešenja",
+    trustFast: "Instant kontakt",
+    saveCompatibility: "Kompatibilno sa iOS i Android",
+    contactSaved: "Kontakt je sačuvan ✓",
+    linkCopied: "Link je kopiran ✓",
+    shareNotSupported: "Deljenje nije podržano u ovom browseru",
+    phoneCopied: "Broj je kopiran ✓",
+    emailCopied: "Email je kopiran ✓",
+    shareTitle: "Nikola Damnjanović | EKO Elektrofrigo",
+    shareText: "Direktor prodaje – EKO Elektrofrigo\nRashladni sistemi • Klimatizacija • CA komore",
+    vcfTitle: "DIrektor Prodaje",
+    vcfNote: "Vaš partner od 1996...",
+    vcfFileName: "Nikola_Damnjanovic_EKO_SR.vcf",
+  },
+  en: {
+    langLabel: "Language",
+    position: "Sales Director",
+    saveContact: "Save Contact",
+    callPrimary: "Call",
+    office: "Office",
+    whatsapp: "WhatsApp",
+    email: "Email",
+    shareCard: "Share This Card",
+    websites: "Websites",
+    wholesales: "Wholesales",
+    openMapsGoogle: "Open in Google Maps",
+    openMapsApple: "Open in Apple Maps",
+    trustField: "B2B HVAC Solutions",
+    trustFast: "Instant Contact",
+    saveCompatibility: "Compatible with iOS and Android",
+    contactSaved: "Contact saved ✓",
+    linkCopied: "Link copied ✓",
+    shareNotSupported: "Sharing is not supported on this browser",
+    phoneCopied: "Phone number copied ✓",
+    emailCopied: "Email copied ✓",
+    shareTitle: "Nikola Damnjanović | EKO Elektrofrigo",
+    shareText: "Sales Director – EKO Elektrofrigo\nRefrigeration • Air Conditioning • CA Rooms",
+    vcfTitle: "Sales Director",
+    vcfNote: "Your partner since 1996...",
+    vcfFileName: "Nikola_Damnjanovic_EKO_EN.vcf",
+  },
+} as const;
 
 /* ════════════════════════════════════════
    PREMIUM ICONS  (Phosphor-style, 2px stroke, round caps)
@@ -174,21 +218,40 @@ function useRipple() {
   return { fire, els };
 }
 
+function getInitialLanguage(): "sr" | "en" {
+  if (typeof navigator === "undefined") return "en";
+  const browserLanguages = navigator.languages?.length
+    ? navigator.languages
+    : [navigator.language];
+  const hasSerbian = browserLanguages.some((locale) =>
+    locale?.toLowerCase().startsWith("sr"),
+  );
+  return hasSerbian ? "sr" : "en";
+}
+
 /* ════════════════════════════════════════
    MAIN COMPONENT
 ════════════════════════════════════════ */
 export default function VCard() {
+  const [lang, setLang] = useState<"sr" | "en">(getInitialLanguage);
   const [toast, setToast] = useState("");
   const [showToast, setShowToast] = useState(false);
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const t = UI[lang];
 
   const callRipple = useRipple();
   const waRipple = useRipple();
   const emailRipple = useRipple();
   const saveRipple = useRipple();
   const shareRipple = useRipple();
+
+  const isIOS =
+    typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const mapsUrl = isIOS
+    ? `https://maps.apple.com/?q=${encodeURIComponent(`${C.address}, ${C.city}`)}`
+    : C.maps;
 
   function showMsg(msg: string) {
     setToast(msg);
@@ -198,40 +261,56 @@ export default function VCard() {
   }
 
   function saveContact() {
-    const blob = new Blob([VCF], { type: "text/vcard;charset=utf-8" });
+    const vcf = `BEGIN:VCARD
+VERSION:3.0
+FN:${C.name}
+ORG:${C.company}
+TITLE:${t.vcfTitle}
+TEL:${C.primaryPhone}
+TEL:${C.secondaryPhone}
+EMAIL:${C.email}
+URL:${C.website1}
+URL:${C.website2}
+ADR:;;${C.address};Zemun;Belgrade;;
+NOTE:${t.vcfNote}
+END:VCARD`;
+    const blob = new Blob([vcf], { type: "text/vcard;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "Nikola_Damnjanovic_EKO.vcf";
+    a.download = t.vcfFileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showMsg("Contact saved to your device ✓");
+    showMsg(t.contactSaved);
   }
 
   async function shareCard() {
     const shareData = {
-      title: "Nikola Damnjanović | EKO Elektrofrigo",
-      text: "Sales Director – EKO Elektrofrigo\nRefrigeration • Air Conditioning • CA Rooms",
+      title: t.shareTitle,
+      text: t.shareText,
       url: window.location.href,
     };
     try {
-      if (navigator.share && navigator.canShare?.(shareData)) {
+      if (navigator.share) {
         await navigator.share(shareData);
       } else {
-        await navigator.clipboard.writeText(window.location.href);
-        showMsg("Link copied to clipboard ✓");
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          showMsg(t.linkCopied);
+        } catch {
+          showMsg(t.shareNotSupported);
+        }
       }
     } catch {
-      // user cancelled
     }
   }
 
   function copyPhone() {
     navigator.clipboard.writeText(C.primaryPhoneDisplay).then(() => {
       setCopiedPhone(true);
-      showMsg("Phone number copied ✓");
+      showMsg(t.phoneCopied);
       setTimeout(() => setCopiedPhone(false), 2100);
     });
   }
@@ -239,7 +318,7 @@ export default function VCard() {
   function copyEmail() {
     navigator.clipboard.writeText(C.email).then(() => {
       setCopiedEmail(true);
-      showMsg("Email address copied ✓");
+      showMsg(t.emailCopied);
       setTimeout(() => setCopiedEmail(false), 2100);
     });
   }
@@ -258,8 +337,22 @@ export default function VCard() {
           <div className="top-bar" />
 
           {/* Logo */}
-          <div className="header-zone anim-fade-up d1">
+          <div className="header-zone anim-fade-up d1 signature-reveal">
             <img src="/eko-logo.png" alt="EKO Elektrofrigo" className="logo-img" />
+            <div className="lang-switch" role="group" aria-label={t.langLabel}>
+              <button
+                className={`lang-btn${lang === "sr" ? " active" : ""}`}
+                onClick={() => setLang("sr")}
+                type="button">
+                SR
+              </button>
+              <button
+                className={`lang-btn${lang === "en" ? " active" : ""}`}
+                onClick={() => setLang("en")}
+                type="button">
+                EN
+              </button>
+            </div>
           </div>
 
           <div className="divider anim-fade-in d1" />
@@ -274,9 +367,21 @@ export default function VCard() {
 
           {/* Identity */}
           <div className="identity-zone anim-fade-up d2">
+            <p className="company-kicker">{C.company}</p>
             <h1 className="name-text">{C.name}</h1>
-            <p className="position-text">{C.position}</p>
-            <p className="company-text">{C.company}</p>
+            <p className="position-text">{t.position}</p>
+          </div>
+
+          <div className="hero-rail anim-fade-up d3">
+            <a href={C.website1} target="_blank" rel="noopener noreferrer" className="hero-pill">
+              {C.website1Display}
+            </a>
+          </div>
+
+          <div className="trust-strip anim-fade-up d3">
+            <span className="trust-item">{t.trustField}</span>
+            <span className="trust-dot">•</span>
+            <span className="trust-item">{t.trustFast}</span>
           </div>
 
           <div className="divider anim-fade-in d3" />
@@ -284,12 +389,27 @@ export default function VCard() {
           {/* ── Primary Actions ── */}
           <div className="actions-zone anim-fade-up d3">
 
+            {/* Save Contact */}
+            <div className="save-wrap" style={{ padding:0, margin:"0.2rem 0 0" }}>
+              <div className="save-pulse" />
+              <div className="save-pulse save-pulse-2" />
+              <button className="btn btn-save"
+                onClick={(e) => { saveRipple.fire(e); saveContact(); }}
+                onTouchStart={saveRipple.fire}
+                aria-label="Save Contact">
+                <IcoUserPlus />
+                <span className="btn-label">{t.saveContact}</span>
+                {saveRipple.els}
+              </button>
+            </div>
+            <p className="save-note">{t.saveCompatibility}</p>
+
             {/* Call — primary with inline copy */}
             <div className="btn-group is-call">
               <a href={`tel:${C.primaryPhone}`} className="btn btn-call"
                 onClick={callRipple.fire} onTouchStart={callRipple.fire} aria-label="Call">
                 <IcoPhone size={20} />
-                Call {C.primaryPhoneDisplay}
+                <span className="btn-label">{t.callPrimary} {C.primaryPhoneDisplay}</span>
                 {callRipple.els}
               </a>
               <div className="btn-group-sep" />
@@ -304,15 +424,15 @@ export default function VCard() {
             {/* Call — office */}
             <a href={`tel:${C.secondaryPhone}`} className="btn btn-call btn-call-sm" aria-label="Office">
               <IcoPhone size={16} />
-              <span style={{ color:"rgba(255,255,255,0.46)", fontSize:"0.7rem", marginRight:"0.15rem", fontWeight:600, letterSpacing:"0.1em", textTransform:"uppercase" }}>Office</span>
-              {C.secondaryPhoneDisplay}
+              <span className="btn-label btn-label-office">{t.office}</span>
+              <span className="btn-label">{C.secondaryPhoneDisplay}</span>
             </a>
 
             {/* WhatsApp */}
             <a href={C.whatsapp} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp"
               onClick={waRipple.fire} onTouchStart={waRipple.fire} aria-label="WhatsApp">
               <IcoWA />
-              WhatsApp
+              <span className="btn-label">{t.whatsapp}</span>
               {waRipple.els}
             </a>
 
@@ -320,7 +440,7 @@ export default function VCard() {
             <div className="btn-group is-email">
               <a href={`mailto:${C.email}`} className="btn btn-email"
                 onClick={emailRipple.fire} onTouchStart={emailRipple.fire} aria-label="Email">
-                <span className="btn-email-label"><IcoMail />Email</span>
+                <span className="btn-email-label"><IcoMail />{t.email}</span>
                 <span className="btn-email-addr">{C.email}</span>
                 {emailRipple.els}
               </a>
@@ -338,23 +458,9 @@ export default function VCard() {
               onClick={(e) => { shareRipple.fire(e); shareCard(); }}
               onTouchStart={shareRipple.fire} aria-label="Share this card">
               <IcoShare />
-              Share This Card
+              <span className="btn-label">{t.shareCard}</span>
               {shareRipple.els}
             </button>
-
-            {/* Save Contact */}
-            <div className="save-wrap" style={{ padding:0, margin:"0.2rem 0 0" }}>
-              <div className="save-pulse" />
-              <div className="save-pulse save-pulse-2" />
-              <button className="btn btn-save"
-                onClick={(e) => { saveRipple.fire(e); saveContact(); }}
-                onTouchStart={saveRipple.fire}
-                aria-label="Save Contact">
-                <IcoUserPlus />
-                Save Contact
-                {saveRipple.els}
-              </button>
-            </div>
 
           </div>
 
@@ -364,8 +470,8 @@ export default function VCard() {
           <div className="secondary-zone anim-fade-up d4" style={{ paddingTop:"1.125rem" }}>
 
             {/* Websites */}
-            <div>
-              <span className="section-label">Websites</span>
+            <div className="info-block">
+              <span className="section-label">{t.websites}</span>
               <div style={{ display:"flex", flexDirection:"column", gap:"0.5rem" }}>
                 <a href={C.website1} target="_blank" rel="noopener noreferrer" className="btn-website">
                   <IcoGlobe />{C.website1Display}
@@ -379,14 +485,15 @@ export default function VCard() {
             </div>
 
             {/* Address */}
-            <div className="address-card">
+            <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="address-card">
               <div className="address-icon"><IcoPin /></div>
               <div>
-                <span className="section-label">Wholesales</span>
+                <span className="section-label">{t.wholesales}</span>
                 <p className="address-street">{C.address}</p>
                 <p className="address-city">{C.city}</p>
+                <span className="address-hint">{isIOS ? t.openMapsApple : t.openMapsGoogle}</span>
               </div>
-            </div>
+            </a>
 
 
           </div>
@@ -394,10 +501,10 @@ export default function VCard() {
           {/* ── Footer ── */}
           <div className="footer-zone anim-fade-up d6">
             <div className="divider" style={{ margin:"0 0 1rem" }} />
-            <p className="footer-tagline">{C.tagline}</p>
             <div className="activity-chips">
               {C.activities.map(a => <span key={a} className="chip">{a}</span>)}
             </div>
+            <p className="footer-tagline">{C.tagline}</p>
           </div>
 
           <div className="bottom-bar" />
